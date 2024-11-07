@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <title>Chat com Ollama</title>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Container da conversa */
+        #chat-container {
+            width: 70%;
+            max-width: 600px;
+            height: 400px; /* Altura fixa para a área de mensagens */
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto; /* Permite rolagem quando as mensagens ultrapassam a altura */
+            margin-bottom: 20px; /* Espaço abaixo do chat */
+        }
+
+        /* Caixa de entrada e botão */
+        .input-container {
+            display: flex;
+            width: 70%;
+            max-width: 600px;
+        }
+        #user_input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px 0 0 6px; /* Bordas arredondadas apenas no lado esquerdo */
+            border: 1px solid #ddd;
+            outline: none;
+        }
+        #user_input:focus {
+            border-color: #007bff;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 0 6px 6px 0; /* Bordas arredondadas apenas no lado direito */
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilos das bolhas de conversa */
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 90%;
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .user-message {
+            max-width: 40%;
+            align-self: flex-end;
+            background-color: #d1e7ff;
+            color: #333;
+        }
+        .bot-message {
+            max-width: 100%;
+            align-self: flex-start;
+            background-color: #e4e6eb;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat com o Modelo Ollama</h1>
+    <!-- Container da conversa -->
+    <div id="chat-container">
+        <div id="response"></div> <!-- Aqui serão exibidas as mensagens -->
+    </div>
+
+    <!-- Entrada de mensagem e botão -->
+    <div>
+        <input type="text" id="user_input" placeholder="Digite sua pergunta" required>
+        <button onclick="sendQuestion()">Enviar</button>
+    </div>
+
+
+    <script>
+        async function sendQuestion() {
+            const userInput = document.getElementById('user_input').value;
+            const responseDiv = document.getElementById('response');
+
+            if (userInput.trim() !== "") {
+                // Adiciona a mensagem do usuário
+                const userMessage = document.createElement("div");
+                userMessage.className = "message user-message";
+                userMessage.textContent = userInput;
+                responseDiv.appendChild(userMessage);
+                
+                // Limpa o campo de entrada
+                document.getElementById("user_input").value = "";
+                document.getElementById("user_input").focus();
+
+                // Envia a pergunta ao backend
+                try {
+                    const response = await fetch('/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user_input: userInput }),
+                    });
+
+                    // Verifica se a resposta foi recebida corretamente
+                    if (response.ok) {
+                        const data = await response.json();
+                        const botMessage = document.createElement("div");
+                        botMessage.className = "message bot-message";
+                        botMessage.textContent = data.response;
+                        responseDiv.appendChild(botMessage);
+                    } else {
+                        throw new Error('Erro ao receber a resposta');
+                    }
+                    
+                } catch (error) {
+                    const errorMessage = document.createElement("div");
+                    errorMessage.className = "message bot-message";
+                    errorMessage.textContent = "Desculpe, houve um erro ao processar sua pergunta.";
+                    responseDiv.appendChild(errorMessage);
+                }
+
+                // Rolagem automática para a última mensagem
+                responseDiv.scrollTop = responseDiv.scrollHeight;
+
+                
+            }
+        }
+        
+    </script>
+</body>
+</html>

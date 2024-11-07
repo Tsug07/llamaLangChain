@@ -1,0 +1,6 @@
+text,label
+"I love this product, it's amazing!",positive
+"The service was okay, but not great.",neutral
+"I wouldn't recommend this to anyone.",negative
+"Absolutely fantastic experience!",positive
+"This is the worst I've ever tried.",negative
